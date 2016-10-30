@@ -1,8 +1,15 @@
 @()
 
 @main("Test") {
-    <div class="test">
-
+    <div class="root">
+        <div class="top">
+            <div class="topbutton focus-interfaces">Manage interfaces</div>
+            <div class="topbutton">Manage things</div>
+            <div class="topbutton">System</div>
+            <div class="topbutton">Tools</div>
+            <div class="topbutton">Console</div>
+        </div>
+        <div id="window-container"></div>
     </div>
     @playscalajs.html.selectScript("client")
     @playscalajs.html.launcher("client")
