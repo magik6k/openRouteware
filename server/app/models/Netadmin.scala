@@ -2,18 +2,21 @@ package models
 
 import java.io.{DataInputStream, BufferedInputStream}
 import java.nio.ByteBuffer
+import java.nio.charset.StandardCharsets
 
 import com.google.common.primitives.{Longs, Ints}
 import models.commands.InterfaceList
+import play.api.libs.json._
 
 object Netadmin {
   var pr: Process = null
 
   def processCommand(data: Array[Byte]): Unit = {
-    val seq = ByteBuffer.wrap(data, 4, 8).getLong
-    println(s"SSEQ: $seq")
-    if(Commands.CMD_PING_RESPONSE ~ data)   println("PONG")
-    if(Commands.CMD_INTERFACE_LIST ~ data)  InterfaceList.handleResponse(seq, data)
+    val json = Json.parse(data)
+    println(s"Rcmd: ${new String(data, StandardCharsets.UTF_8)}")
+    val seq = (json \ "seq").as[Long]
+    if(Commands.CMD_PING_RESPONSE ~ json)   println("PONG")
+    if(Commands.CMD_INTERFACE_LIST ~ json)  InterfaceList.handleResponse(seq, json)
   }
 
   def start(): Unit = {
@@ -22,8 +25,8 @@ object Netadmin {
     pb.redirectInput(ProcessBuilder.Redirect.PIPE)
     pb.redirectError(ProcessBuilder.Redirect.INHERIT)
     pr = pb.start()
-    pr.getOutputStream.write(Array[Byte](0,0,0,12, 0,0,0,0, 0,0,0,0,0,0,0,0))
-    pr.getOutputStream.write(Array[Byte](0,0,0,12, 1,0,0,0, 0,0,0,0,0,0,0,1))
+    //pr.getOutputStream.write(Array[Byte](0,0,0,12, 0,0,0,0, 0,0,0,0,0,0,0,0))
+    //pr.getOutputStream.write(Array[Byte](0,0,0,12, 1,0,0,0, 0,0,0,0,0,0,0,1))
     pr.getOutputStream.flush()
 
     new Thread("NetAdmin Manager") {
@@ -48,11 +51,12 @@ object Netadmin {
 
   }
 
-  def startCommand(cmd: Command, seq: Long, args: Seq[Byte] = Seq.empty): Unit = {
-    pr.getOutputStream.write(Ints.toByteArray(4 + 8 + args.length))
-    pr.getOutputStream.write(cmd.bytes.toArray)
-    pr.getOutputStream.write(Longs.toByteArray(seq))
-    pr.getOutputStream.write(args.toArray)
+  def startCommand(cmd: Command, seq: Long, args: Seq[(String, JsValue)] = Seq.empty): Unit = {
+    val json = JsObject(Seq("cmd" -> JsString(cmd.name),
+                            "seq" -> JsNumber(seq)) ++ args)
+    val bytes = json.toString().getBytes(StandardCharsets.UTF_8)
+    pr.getOutputStream.write(Ints.toByteArray(bytes.length))
+    pr.getOutputStream.write(bytes)
     pr.getOutputStream.flush()
   }
 

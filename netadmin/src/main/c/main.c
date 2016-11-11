@@ -15,6 +15,7 @@ int main() {
         int r = read(STDIN_FILENO, &toRead, 4);
         if(r != 4) {
             fprintf(stderr, "PANIC: desync cmd read\n");
+            exit(1);
             //TODO: make it not do that
         }
         toRead = be32toh(toRead);

@@ -2,6 +2,6 @@
 #include <stdio.h>
 #include <unistd.h>
 
-void command_ping(const char* command, int dlen, uint64_t seq) {
-    writeCommand(CMD_PING_RESPONSE, seq, 0, NULL);
+void command_ping(json_t* command, uint64_t seq) {
+    writeCommand(CMD_PING_RESPONSE, seq, NULL);
 }

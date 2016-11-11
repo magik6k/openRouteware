@@ -1,5 +1,6 @@
 #include <bencodetools/bencode.h>
 #include <stdint.h>
+#include <jansson.h>
 
 /* Command format
  * [I4 Length of further data][I4 Command][I8 SEQ][data]
@@ -20,18 +21,18 @@
  * 0.0.1 -> Ping response
  */
 
-#define CMD_PING_REQUEST        "\0\0\0\0"
-#define CMD_PING_RESPONSE       "\0\0\0\1"
-#define CMD_ERROR               "\0\0\0\2" // [Int: len][desc]
+#define CMD_PING_REQUEST        "generic.ping.request"
+#define CMD_PING_RESPONSE       "generic.ping.response"
+#define CMD_ERROR               "generic.error" // [Int: len][desc]
 
-#define CMD_GET_INTERFACE_LIST  "\1\0\0\0"
+#define CMD_GET_INTERFACE_LIST  "link.get"
 
-#define CMD_INTERFACE_LIST      "\2\0\0\0"
+#define CMD_INTERFACE_LIST      "link.get.response"
 
 uint64_t cmdtoi(char* cmd);
-void writeCommand(const char* command, uint64_t seq, int datalen, void* data);
+void writeCommand(const char* command, uint64_t seq, json_t* data);
 
-void command_ping           (const char* command, int dlen, uint64_t seq);
-void command_get_interfaces (const char* command, int dlen, uint64_t seq);
+void command_ping           (json_t* command, uint64_t seq);
+void command_get_interfaces (json_t* command, uint64_t seq);
 
 

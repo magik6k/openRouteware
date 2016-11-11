@@ -1,22 +1,20 @@
 package models
 
+import play.api.libs.json._
+
 object Commands {
-  val CMD_PING_REQUEST        = Command(0,0,0,0)
-  val CMD_PING_RESPONSE       = Command(0,0,0,1)
-  val CMD_ERROR               = Command(0,0,0,2)
+  val CMD_PING_REQUEST        = Command("generic.ping.request")
+  val CMD_PING_RESPONSE       = Command("generic.ping.response")
+  val CMD_ERROR               = Command("generic.error")
 
-  val CMD_GET_INTERFACE_LIST  = Command(1,0,0,0)
+  val CMD_GET_INTERFACE_LIST  = Command("link.get")
 
-  val CMD_INTERFACE_LIST      = Command(2,0,0,0)
+  val CMD_INTERFACE_LIST      = Command("link.get.response")
 }
 
-case class Command(bytes: Byte*) {
+case class Command(name: String) {
   // Commands.CMD_PING_REQUEST ~ buf
-  def ~(to: Array[Byte]): Boolean = {
-    bytes.zipWithIndex.forall{case (b: Byte, idx: Int) => b == to(idx)}
-  }
-
-  def +(data: Array[Byte]) = {
-    (bytes ++ data).toArray
+  def ~(to: JsValue): Boolean = {
+    name.equals((to \ "cmd").as[String])
   }
 }
