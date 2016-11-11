@@ -1,0 +1,28 @@
+@(interface: String)
+
+@window(s"Interface $interface") {
+<div class="wnd-interface-root">
+    <div>State: UP & RUNNING *TX* *RX*</div>
+    <div>v 10Mb/s - v 100pps - ^ 100pps - ^ 1Mbs</div>
+    <div>stats ----</div>
+    <div>IP4 neigh: 10; IP6 neigh: 16</div>
+    <div>IPv4: +</div>
+    <div class="list-table">
+        <table>
+            <tr><td></td>   <td>Address</td><td>Netmask</td><td>Network</td></tr>
+            <tr><td>D X</td><td>172.16.0.1</td><td>/24</td><td>172.16.0.1</td></tr>
+        </table>
+    </div>
+    <div>IPv6: +</div>
+    <div class="list-table">
+        <table>
+            <tr><td></td>    <td>Address</td>                     <td>Netmask</td><td>Network</td></tr>
+            <tr><td>D X</td><td>2001:DB8:1235::1</td>             <td>/40</td>    <td>2001:DB8:1235::</td></tr>
+            <tr><td>D X</td><td>2001:DB8:fd00::3145:9265:3589</td><td>/40</td>    <td>2001:DB8:fd00::</td></tr>
+        </table>
+    </div>
+    <div>Bridge ports:</div>
+    <div>Master: br0</div>
+    <div>Link type: bridge/ether/iptun</div>
+</div>
+}

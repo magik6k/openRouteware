@@ -1,4 +1,6 @@
 import sbt.Project.projectToRef
+import sbt.inc._
+import xsbti.api.Source
 
 import scala.language.postfixOps
 
@@ -15,6 +17,17 @@ def commonSettings(pname: String) = Seq(
 //////////////////////////
 // SERVER
 
+def netadminBuild(): Unit = {
+  "scripts/build-libnl.sh" !;
+  "scripts/build-benc.sh" !;
+  "scripts/netadmin-deps.sh" !
+
+  println("Compiling netadmin")
+  "scripts/netadmin.sh" !
+
+  "scripts/copy-dist.sh" !
+}
+
 lazy val clients = Seq(client)
 lazy val server = (project in file("server")).settings(commonSettings("server"): _*).settings(
   scalaJSProjects := clients,
@@ -24,6 +37,7 @@ lazy val server = (project in file("server")).settings(commonSettings("server"):
   libraryDependencies ++= Seq(
   	"com.vmunier" %% "play-scalajs-scripts" % "0.3.0",
     "org.webjars" % "jquery" % "1.11.1",
+    "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
     //"me.chrons" %% "boopickle" % "1.1.0",
     cache,
     ws,
@@ -33,6 +47,11 @@ lazy val server = (project in file("server")).settings(commonSettings("server"):
   includeFilter in (Assets, LessKeys.less) := "main.less",
   routesGenerator := InjectedRoutesGenerator,
 
+  compile <<= (compile in Compile) map { result =>
+    println("Preparing netadmin dependencies")
+    netadminBuild() //Make it use netadmin task
+    result
+  },
   (compile in Compile) <<= (compile in Compile)
 ).enablePlugins(PlayScala).
   aggregate(clients.map(projectToRef): _*)
@@ -112,12 +131,7 @@ lazy val commonJs = common.js.settings(
 lazy val netadmin = TaskKey[Unit]("netadmin", "Compiles netadmin and dependencies")
 
 netadmin := {
-  println("Preparing netadmin dependencies")
-  "scripts/build-libnl.sh" !;
-  "scripts/netadmin-deps.sh" !
-
-  println("Compiling netadmin")
-  "scripts/netadmin.sh" !
+  netadminBuild()
 }
 
 /////

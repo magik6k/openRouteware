@@ -1,35 +1,49 @@
-#include <netlink/route/link.h>
-#include <netlink/socket.h>
+#include <bencodetools/bencode.h>
+#include <stdio.h>
+#include <stdbool.h>
+#include <errno.h>
+#include <unistd.h>
+#include "command.h"
+#include <endian.h>
+#include <string.h>
 
 int main() {
-    struct nl_cache* cache;
-    struct rtnl_link* link;
-    struct nl_sock* sock = nl_socket_alloc();
-    nl_connect(sock, NETLINK_ROUTE);
+    setvbuf(stdout, NULL, _IONBF, 0);
 
-    if(!sock) {
-        printf("error: nl_socket_alloc\n");
-        return 1;
+    while(true) {
+        int toRead = 0;
+        int r = read(STDIN_FILENO, &toRead, 4);
+        if(r != 4) {
+            fprintf(stderr, "PANIC: desync cmd read\n");
+            //TODO: make it not do that
+        }
+        toRead = be32toh(toRead);
+
+        char* buf = malloc(toRead);
+        memset(buf, 0, toRead);
+        int offset = 0;
+
+        while(toRead > 0) {
+            int r = read(STDIN_FILENO, buf + offset, toRead - offset);
+            if(r > 0) {
+                toRead -= r;
+                offset += r;
+            } else if(errno == EAGAIN || errno == EINTR) {
+                continue;
+            } else {
+                toRead = -1;
+            }
+        }
+
+        if(toRead < 0) {
+            fprintf(stderr, "PANIC: read error\n");
+            exit(1);
+        }
+
+        process_command(offset, buf);
+
+        free(buf);
     }
-
-    if(rtnl_link_alloc_cache(sock, AF_UNSPEC, &cache) < 0) {
-        printf("error: rtnl_link_alloc_cache\n");
-        return 1;
-    }
-
-    int i = 1;
-    while(link = rtnl_link_get(cache, i)) {
-        char b[32];
-        memset(b, 0, 32);
-        rtnl_link_i2name(cache, i, b, 32);
-        printf("i: %s\n", b);
-        i++;
-    }
-
-
-    rtnl_link_put(link);
-    nl_cache_put(cache);
-    nl_socket_free(sock);
 
     return 0;
 }

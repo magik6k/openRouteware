@@ -1,12 +1,12 @@
 CC = gcc
-CFLAGS?=-O2 -std=c99 -fdata-sections -ffunction-sections -pthread
+CFLAGS?=-O2 -std=gnu99 -g -fdata-sections -ffunction-sections -pthread
 LDFLAGS+= -O2 -Wl,--gc-sections -Ltarget/lib -pthread
 
 SOURCE = src/main/c
 
 BUILD = target/native/
 
-LIBS = -lnl-3 -lnl-route-3
+LIBS = target/lib/libbencodetools.a -lnl-3 -lnl-route-3 -ljansson
 
 SRCDIRECTORIES = $(shell find $(SOURCE) -type d)
 BUILDDIRECTORIES = $(BUILD) $(patsubst $(SOURCE)/%, $(BUILD)%, $(SRCDIRECTORIES))
@@ -29,5 +29,5 @@ $(BUILD)$(OUTNAME): $(OBJECTS)
 $(BUILD)%.c.o: $(SOURCE)/%.c
 	$(CC) -c $(CFLAGS) $(INCLUDES) $< -o $@
 
-clean: cleanresources
+clean:
 	-rm -rf $(BUILD)

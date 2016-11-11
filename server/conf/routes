@@ -7,6 +7,9 @@ GET     /                           controllers.Application.index
 
 GET     /windows/test               controllers.Windows.test
 GET     /windows/interfaces         controllers.Windows.interfaces
+GET     /windows/interface/*iface   controllers.Windows.interface(iface)
+
+GET     /api/v0/link/list           controllers.network.Link.list
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
